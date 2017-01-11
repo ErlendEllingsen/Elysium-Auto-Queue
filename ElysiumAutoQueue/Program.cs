@@ -52,10 +52,10 @@ namespace ElysiumAutoQueue
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
         public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
         //Mouse actions
-        private const int MOUSEEVENTF_LEFTDOWN = 0x02;
-        private const int MOUSEEVENTF_LEFTUP = 0x04;
-        private const int MOUSEEVENTF_RIGHTDOWN = 0x08;
-        private const int MOUSEEVENTF_RIGHTUP = 0x10;
+        public const int MOUSEEVENTF_LEFTDOWN = 0x02;
+        public const int MOUSEEVENTF_LEFTUP = 0x04;
+        public const int MOUSEEVENTF_RIGHTDOWN = 0x08;
+        public const int MOUSEEVENTF_RIGHTUP = 0x10;
 
 
 
@@ -102,18 +102,18 @@ namespace ElysiumAutoQueue
         public static IntPtr console_handle;
 
         //Application vars 
-        public enum ApplicationModes { normal, cordscan, dev };
+        public enum ApplicationModes { normal, cordscan, dev, screenshot };
         public static ApplicationModes applicationMode = ApplicationModes.normal;
 
         public static List<GameState> gameStates = new List<GameState>();
-        public static GameState queueBox;
+        public static GameState queueBox, loginScreen, realmSelect, charSelect, waitingDialog, disconnectDialog;
 
         #endregion
 
         #region Frequently used functions 
 
         #region GameFunctions 
-        static bool gameIsGameState(GameState gs)
+        public static bool gameIsGameState(GameState gs)
         {
             //Go through the criterias...
             bool criteriasBroken = false; 
@@ -138,7 +138,7 @@ namespace ElysiumAutoQueue
                 //Loop through accepted colors
                 foreach (string s in gsc.acceptedColors)
                 {
-                    if (s == colorFromGame)
+                    if (ColorLike(hexToColor(s), hexToColor(colorFromGame)))
                     {
                         foundCorrectColor = true;
                         break;
@@ -163,7 +163,7 @@ namespace ElysiumAutoQueue
             //end gameIsGameState
         }
 
-        static Image gameGetImage(int left, int top, int right, int bottom)
+        public static Image gameGetImage(int left, int top, int right, int bottom)
         {
             right = (left + (right - left));
             bottom = (top + (bottom - top));
@@ -208,8 +208,14 @@ namespace ElysiumAutoQueue
             Bitmap bmp = new Bitmap(rct.Width, rct.Height, PixelFormat.Format32bppArgb);
             Graphics g = Graphics.FromImage(bmp);
             g.CopyFromScreen(rct.Left, rct.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
-            bmp.Save("test.jpeg", System.Drawing.Imaging.ImageFormat.Jpeg);
+            bmp.Save("test.jpeg", System.Drawing.Imaging.ImageFormat.Png);
             return bmp;
+        }
+
+        public static Color hexToColor(string s)
+        {
+            Color color = System.Drawing.ColorTranslator.FromHtml("#" + s);
+            return color; 
         }
 
         public static string colorToHex(Color c)
@@ -243,33 +249,74 @@ namespace ElysiumAutoQueue
             return "Reds";
         }
 
+        public static bool ColorLike(Color a, Color b)
+        {
+            //h, s, l
+            double limit = 0.1; // 10% equality rate
+            double minPos = 1 + limit;
+            double minNeg = 1 - limit;
+
+            double h = (a.GetHue() / b.GetHue());
+            double s = (a.GetSaturation() / b.GetSaturation());
+            double l = (a.GetBrightness() / b.GetBrightness());
+
+            bool resH = (h >= minNeg && h <= minPos);
+            bool resS = (s >= minNeg && s <= minPos);
+            bool resL = (l >= minNeg && l <= minPos);
+
+            //Check for blacks (can't divide by 0).
+            if (a.GetHue() == 0 && b.GetHue() == 0) resH = true;
+            if (a.GetSaturation() == 0 && b.GetSaturation() == 0) resS = true;
+            if (a.GetBrightness() == 0 && b.GetBrightness() == 0) resL = true;
+
+            return (resH && resS && resL);
+
+        }
+
         #endregion
 
         #endregion
 
         #region Main functions 
-        static void setupGameStates()
+
+
+        public static System.Threading.Timer t;
+
+
+        static string findGameState()
         {
 
-            //Login GameState 
+            //Queuebox
+            bool isWaitingDialog = Processes.isWaitingDialog();
+            if (isWaitingDialog) return "waiting-dialog";
 
-            //Queue box GameState
-            queueBox = new GameState("QueueBox");
-            queueBox.criterias.Add(new GameStateCriteria("BoxTopLeft", 440, 375, "474744,8C5422,8D5422,8B5422"));
-            queueBox.criterias.Add(new GameStateCriteria("BoxBottomRight", 1026, 553, "5E5C5A,151210"));
-            queueBox.criterias.Add(new GameStateCriteria("BtnChangeRealm", 654, 521, "B20C04,B20D04,300200", true));
+            bool isDisconnectDialog = Processes.isDisconnected();
+            if (isDisconnectDialog) return "disconnect-dialog";
 
+            bool isRealmSelect = Processes.isRealmSelector();
+            if (isRealmSelect) return "realm-select";
 
+            bool isQueueBox = Processes.isQueueBox();
+            if (isQueueBox) return "queue";
 
+            bool isCharacterSelect = Processes.isCharacterSelector();
+            if (isCharacterSelect) return "char-select";
+            
+            bool isLogin = Processes.isLogin();
+            if (isLogin) return "login";
 
+            bool isRealmSetup = Processes.isRealmSetup();
+            if (isRealmSetup) return "realm-setup";
 
+            return null;
         }
+
         #endregion
 
 
         static void Main(string[] args)
         {
-            
+            applicationMode = ApplicationModes.dev;
 
             IntPtr thisHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
 
@@ -302,70 +349,24 @@ namespace ElysiumAutoQueue
 
             //RESIZE THE WINDOW 
             MoveWindow(proc, 0, 0, 1465, 910, true);
-            //System.Threading.Thread.Sleep(250);
+            //System.Threading.Thread.Sleep(250); 
 
             //FETCH POSITION AGAIN 
             updateWowRect();
 
-            setupGameStates();
 
-            applicationMode = ApplicationModes.dev;
+            t = new System.Threading.Timer(TimerCallback, null, 0, 15000);
 
-            if (applicationMode == ApplicationModes.dev)
+
+            if (applicationMode == ApplicationModes.screenshot)
             {
-                bool gameIsQueueBox = gameIsGameState(queueBox);
-                Console.WriteLine("Is QueueBox?: " + gameIsQueueBox);
-
-                if (gameIsQueueBox)
-                {
-                    Bitmap bmp = (Bitmap)gameGetImage(440, 375, 1026, 553);
-                    Bitmap bmp2 = new Bitmap(bmp);
-
-                    
-
-                    //Scan the image 
-                    for (var x = 1; x < bmp.Width; x++)
-                    {
-                        for (var y = 1; y < bmp.Height; y++)
-                        {
-
-                            Color fromOrig = bmp.GetPixel(x, y);
-                            string result = ColorClassify(fromOrig);
-
-                            if (result == "Yellows" && fromOrig.GetSaturation() >= 0.92 && fromOrig.GetBrightness() >= 0.3)
-                            {
-                                Console.WriteLine(fromOrig.GetBrightness());
-                                bmp2.SetPixel(x, y, Color.White);
-                            } else
-                            {
-                                bmp2.SetPixel(x, y, Color.Black);
-                            }
-
-                        }
-                    }
-
-                    bmp2.Save("testttt.jpeg");
-
-                    using (var engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default))
-                    {
-                        using (var img = Pix.LoadFromFile("./testttt.jpeg"))
-                        {
-                            using (var page = engine.Process(img))
-                            {
-                                var text = page.GetText();
-                                Console.WriteLine(text);
-                            }
-                        }
-                    }
-
-                                
-
-                }
-
-                
-
-                Console.ReadLine();
+                Bitmap b = (Bitmap)gameGetImage(0, 0, 1465, 910);
+                b.Save("screenshot.png", System.Drawing.Imaging.ImageFormat.Png);
+                Console.ReadKey();
+                Environment.Exit(0);
             }
+
+            
 
             if (applicationMode == (ApplicationModes.cordscan))
             {
@@ -377,43 +378,9 @@ namespace ElysiumAutoQueue
                 }
             }
 
- 
 
-            //--- LOGIN PROCESS ---
-            
-            //-- USERNAME -- 
-            gameSetMouse(705, 485); //Username field
-            System.Threading.Thread.Sleep(150);
-            mouse_event(MOUSEEVENTF_LEFTDOWN, Convert.ToUInt32(Cursor.Position.X), Convert.ToUInt32(Cursor.Position.Y), 0, 0);
-            mouse_event(MOUSEEVENTF_LEFTUP, Convert.ToUInt32(Cursor.Position.X), Convert.ToUInt32(Cursor.Position.Y), 0, 0);
 
-            //Empty if content is there..
-            SendKeys.SendWait("{BACKSPACE}");
 
-            System.Threading.Thread.Sleep(150);
-            SendKeys.SendWait("erlendellingsen");
-
-            System.Threading.Thread.Sleep(500);
-
-            //Switch from username to password-field
-            SendKeys.SendWait("{TAB}");
-
-            //-- PASSWORD --
-            gameSetMouse(705, 574);
-            System.Threading.Thread.Sleep(150);
-
-            mouse_event(MOUSEEVENTF_LEFTDOWN, Convert.ToUInt32(Cursor.Position.X), Convert.ToUInt32(Cursor.Position.Y), 0, 0);
-            mouse_event(MOUSEEVENTF_LEFTUP, Convert.ToUInt32(Cursor.Position.X), Convert.ToUInt32(Cursor.Position.Y), 0, 0);
-
-            SendKeys.SendWait("{BACKSPACE}");
-            System.Threading.Thread.Sleep(150);
-            SendKeys.SendWait("lol123");
-
-            //Login button
-            gameSetMouse(705, 643);
-            System.Threading.Thread.Sleep(150);
-            mouse_event(MOUSEEVENTF_LEFTDOWN, Convert.ToUInt32(Cursor.Position.X), Convert.ToUInt32(Cursor.Position.Y), 0, 0);
-            mouse_event(MOUSEEVENTF_LEFTUP, Convert.ToUInt32(Cursor.Position.X), Convert.ToUInt32(Cursor.Position.Y), 0, 0);
 
             //705, 574
 
@@ -434,5 +401,47 @@ namespace ElysiumAutoQueue
             //RECT rect = new RECT();
             //GetWindowRect(GetForegroundWindow(), out rect);
         }
+
+        private static void TimerCallback(Object o)
+        {
+            
+            t.Dispose();
+            
+            if (applicationMode == ApplicationModes.dev)
+            {
+
+                string state = findGameState();
+                if (state == null)
+                {
+                    Console.WriteLine("GameState is null");
+                }
+                else
+                {
+                    //Console.WriteLine("GameState is " + state);
+                    StateManager.updateState(state);
+                }
+
+                
+
+                /*
+                EXAMPLE OF CAPABILITIES
+                if (state == "realm-select")
+                {
+                    SendKeys.SendWait("{ESC}");
+                }
+                */
+
+
+            }
+
+            // Display the date/time when this method got called.
+            
+            // Force a garbage collection to occur for this demo.
+            GC.Collect();
+
+            t = new System.Threading.Timer(TimerCallback, null, 1500, 15000);
+
+        }
+
     }
 }

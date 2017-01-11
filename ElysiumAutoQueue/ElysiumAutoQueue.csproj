@@ -50,6 +50,12 @@
   <ItemGroup>
     <Compile Include="Content\GameState.cs" />
     <Compile Include="Content\GameStateCriteria.cs" />
+    <Compile Include="Content\Processes.cs" />
+    <Compile Include="Content\SelectRealm.cs" />
+    <Compile Include="Content\StateManager.cs" />
+    <Compile Include="Content\WoWLogin.cs" />
+    <Compile Include="Content\WoWQueue.cs" />
+    <Compile Include="Content\WowServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
