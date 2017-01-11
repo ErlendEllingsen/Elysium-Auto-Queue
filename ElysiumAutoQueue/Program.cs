@@ -8,11 +8,16 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
+using Tesseract;
+
+using ElysiumAutoQueue.Content;
 
 namespace ElysiumAutoQueue
 {
     class Program
     {
+
+        #region Win-Calls
 
         //WIN: Finding rect of process...
         [DllImport("user32.dll")]
@@ -85,31 +90,98 @@ namespace ElysiumAutoQueue
             return hWnd;
 
         }
+        #endregion
 
         #region Vars
+
+        //Crucial vars
 
         public static IntPtr wow_handle;
         public static RECT wow_rect;
 
         public static IntPtr console_handle;
-         
-        #endregion 
 
+        //Application vars 
+        public enum ApplicationModes { normal, cordscan, dev };
+        public static ApplicationModes applicationMode = ApplicationModes.normal;
 
-        public static string colorToHex(Color c)
+        public static List<GameState> gameStates = new List<GameState>();
+        public static GameState queueBox;
+
+        #endregion
+
+        #region Frequently used functions 
+
+        #region GameFunctions 
+        static bool gameIsGameState(GameState gs)
         {
-            string s = c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
-            return s;
+            //Go through the criterias...
+            bool criteriasBroken = false; 
+
+            foreach (GameStateCriteria gsc in gs.criterias)
+            {
+                //Fetch color from game
+                string colorFromGame = gameGetColor(gsc.gameX, gsc.gameY);
+
+                //Check MOUSE criteria
+                if (gsc.requiresMouseHover)
+                {
+                    gameSetMouse(gsc.gameX, gsc.gameY);
+                    Point p = gameGetMouse();
+                    System.Threading.Thread.Sleep(250);
+                    colorFromGame = gameGetColor(p.X, p.Y);
+                }
+
+                //Find matching color 
+                bool foundCorrectColor = false;
+ 
+                //Loop through accepted colors
+                foreach (string s in gsc.acceptedColors)
+                {
+                    if (s == colorFromGame)
+                    {
+                        foundCorrectColor = true;
+                        break;
+                    }
+                }
+
+                string listResult = string.Join(",", gsc.acceptedColors);
+                Console.WriteLine(gsc.name + " : " + foundCorrectColor + " (Expected: " + listResult + " Got: " + colorFromGame);
+
+                //Correct color found?
+                if (!foundCorrectColor)
+                {
+                    criteriasBroken = true;
+                    break;
+                }
+
+                //end criteria loop
+            }
+
+            return !criteriasBroken; 
+
+            //end gameIsGameState
         }
 
-        static Image getClientImage(RECT rect)
+        static Image gameGetImage(int left, int top, int right, int bottom)
         {
-            Rectangle rct = new Rectangle(rect.Left, rect.Top, (rect.Right - rect.Left), (rect.Bottom - rect.Top));
-            Bitmap bmp = new Bitmap(rct.Width, rct.Height, PixelFormat.Format32bppArgb);
-            Graphics g = Graphics.FromImage(bmp);
-            g.CopyFromScreen(rct.Left, rct.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
-            bmp.Save("test.jpeg", ImageFormat.Jpeg);
-            return bmp;
+            right = (left + (right - left));
+            bottom = (top + (bottom - top));
+
+            //Adjust accordingly to the game..
+            left = Program.wow_rect.Left + left;
+            top = Program.wow_rect.Top + top;
+            right = Program.wow_rect.Left + right;
+            bottom = Program.wow_rect.Top + bottom;
+
+            RECT rct = new RECT();
+            rct.Left = left;
+            rct.Top = top;
+            rct.Right = right;
+            rct.Bottom = bottom;
+
+            return getClientImage(rct);
+
         }
 
         public static string gameGetColor(int X, int Y)
@@ -127,17 +199,78 @@ namespace ElysiumAutoQueue
             Point p = new Point(Cursor.Position.X, Cursor.Position.Y);
             return p;
         }
+        #endregion
 
-        
-        
+        #region Other freq. functions
+        static Image getClientImage(RECT rect)
+        {
+            Rectangle rct = new Rectangle(rect.Left, rect.Top, (rect.Right - rect.Left), (rect.Bottom - rect.Top));
+            Bitmap bmp = new Bitmap(rct.Width, rct.Height, PixelFormat.Format32bppArgb);
+            Graphics g = Graphics.FromImage(bmp);
+            g.CopyFromScreen(rct.Left, rct.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+            bmp.Save("test.jpeg", System.Drawing.Imaging.ImageFormat.Jpeg);
+            return bmp;
+        }
+
+        public static string colorToHex(Color c)
+        {
+            string s = c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
+            return s;
+        }
 
         public static void updateWowRect()
         {
             GetWindowRect(Program.wow_handle, out Program.wow_rect);
         }
 
+        public static string ColorClassify(Color c)
+        {
+            float hue = c.GetHue();
+            float sat = c.GetSaturation();
+            float lgt = c.GetBrightness();
+
+            if (lgt < 0.2) return "Blacks";
+            if (lgt > 0.8) return "Whites";
+
+            if (sat < 0.25) return "Grays";
+
+            if (hue < 30) return "Reds";
+            if (hue < 90) return "Yellows";
+            if (hue < 150) return "Greens";
+            if (hue < 210) return "Cyans";
+            if (hue < 270) return "Blues";
+            if (hue < 330) return "Magentas";
+            return "Reds";
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Main functions 
+        static void setupGameStates()
+        {
+
+            //Login GameState 
+
+            //Queue box GameState
+            queueBox = new GameState("QueueBox");
+            queueBox.criterias.Add(new GameStateCriteria("BoxTopLeft", 440, 375, "474744,8C5422,8D5422,8B5422"));
+            queueBox.criterias.Add(new GameStateCriteria("BoxBottomRight", 1026, 553, "5E5C5A,151210"));
+            queueBox.criterias.Add(new GameStateCriteria("BtnChangeRealm", 654, 521, "B20C04,B20D04,300200", true));
+
+
+
+
+
+        }
+        #endregion
+
+
         static void Main(string[] args)
         {
+            
+
             IntPtr thisHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
 
             SetCursorPos(1000, 900);
@@ -174,14 +307,77 @@ namespace ElysiumAutoQueue
             //FETCH POSITION AGAIN 
             updateWowRect();
 
-            /*
-            while (true)
+            setupGameStates();
+
+            applicationMode = ApplicationModes.dev;
+
+            if (applicationMode == ApplicationModes.dev)
             {
-                Point p = gameGetMouse();
-                Console.WriteLine(p.X + "," + p.Y + " - " + gameGetColor(p.X, p.Y));
-                System.Threading.Thread.Sleep(1000);
+                bool gameIsQueueBox = gameIsGameState(queueBox);
+                Console.WriteLine("Is QueueBox?: " + gameIsQueueBox);
+
+                if (gameIsQueueBox)
+                {
+                    Bitmap bmp = (Bitmap)gameGetImage(440, 375, 1026, 553);
+                    Bitmap bmp2 = new Bitmap(bmp);
+
+                    
+
+                    //Scan the image 
+                    for (var x = 1; x < bmp.Width; x++)
+                    {
+                        for (var y = 1; y < bmp.Height; y++)
+                        {
+
+                            Color fromOrig = bmp.GetPixel(x, y);
+                            string result = ColorClassify(fromOrig);
+
+                            if (result == "Yellows" && fromOrig.GetSaturation() >= 0.92 && fromOrig.GetBrightness() >= 0.3)
+                            {
+                                Console.WriteLine(fromOrig.GetBrightness());
+                                bmp2.SetPixel(x, y, Color.White);
+                            } else
+                            {
+                                bmp2.SetPixel(x, y, Color.Black);
+                            }
+
+                        }
+                    }
+
+                    bmp2.Save("testttt.jpeg");
+
+                    using (var engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default))
+                    {
+                        using (var img = Pix.LoadFromFile("./testttt.jpeg"))
+                        {
+                            using (var page = engine.Process(img))
+                            {
+                                var text = page.GetText();
+                                Console.WriteLine(text);
+                            }
+                        }
+                    }
+
+                                
+
+                }
+
+                
+
+                Console.ReadLine();
             }
-            */
+
+            if (applicationMode == (ApplicationModes.cordscan))
+            {
+                while (true)
+                {
+                    Point p = gameGetMouse();
+                    Console.WriteLine(p.X + "," + p.Y + " - " + gameGetColor(p.X, p.Y));
+                    System.Threading.Thread.Sleep(1000);
+                }
+            }
+
+ 
 
             //--- LOGIN PROCESS ---
             
