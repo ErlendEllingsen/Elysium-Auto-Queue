@@ -230,19 +230,22 @@ namespace ElysiumAutoQueue.Content
 
             bmp2.Save("workbox_waiting.png", System.Drawing.Imaging.ImageFormat.Png);
 
+           
             using (var engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default))
             {
                 using (var img = Pix.LoadFromFile("./workbox_waiting.png"))
                 {
                     using (var page = engine.Process(img))
                     {
+
                         var text = page.GetText();
-                        
+
                         if (text.ToLower().Contains("cancel")) return true;
                         return false;
                     }
                 }
             }
+            
 
             return false; //Unexpected result
 

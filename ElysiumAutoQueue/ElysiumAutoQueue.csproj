@@ -57,9 +57,11 @@
     <Compile Include="Content\GameStateCriteria.cs" />
     <Compile Include="Content\OutConfig.cs" />
     <Compile Include="Content\Processes.cs" />
+    <Compile Include="Content\ProgramConfig.cs" />
     <Compile Include="Content\SelectRealm.cs" />
     <Compile Include="Content\StateManager.cs" />
     <Compile Include="Content\WaitingIncidentMonitor.cs" />
+    <Compile Include="Content\WowExternalRealmSwitcher.cs" />
     <Compile Include="Content\WoWLogin.cs" />
     <Compile Include="Content\WoWQueue.cs" />
     <Compile Include="Content\WoWRealmSetup.cs" />
@@ -69,6 +71,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="tessdata\eng.cube.bigrams">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -99,15 +104,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="login_password.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="login_username.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="password_autoqueue.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="x64\liblept172.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

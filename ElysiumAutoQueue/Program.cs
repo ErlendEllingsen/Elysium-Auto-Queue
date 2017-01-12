@@ -98,7 +98,9 @@ namespace ElysiumAutoQueue
 
         public static IntPtr wow_handle;
         public static RECT wow_rect;
+
         public static Process wowproc;
+        public static IntPtr wow_handle_proc;
 
         public static IntPtr console_handle;
 
@@ -317,48 +319,46 @@ namespace ElysiumAutoQueue
 
         public static void Main(string[] args)
         {
-            applicationMode = ApplicationModes.dev;
+            //Program configuration
 
+            applicationMode = ApplicationModes.prod;
+
+            ProgramConfig.loadConfig();
             OutConfig.export();
 
             IntPtr thisHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
 
+            System.Threading.Thread.Sleep(250);
+            MoveWindow(thisHandle, 0, Screen.PrimaryScreen.Bounds.Height - 250, Screen.PrimaryScreen.Bounds.Width, 200, true);
 
+            //START: WOW 
             wowproc = new Process();
-            wowproc.StartInfo = new ProcessStartInfo("D:\\World of Warcraft Classic\\WoW.exe");
+            wowproc.StartInfo = new ProcessStartInfo(ProgramConfig.config.path_wow + "./WoW.exe");
             wowproc.Start();
 
             System.Threading.Thread.Sleep(8000);
 
-            SetCursorPos(1000, 900);
-            //Screen.PrimaryScreen.Bounds.Width;
-            //Screen.PrimaryScreen.Bounds.Height;
-            //Screen.PrimaryScreen.Bounds.Size;
-
-            System.Threading.Thread.Sleep(250);
-            MoveWindow(thisHandle, 0, Screen.PrimaryScreen.Bounds.Height - 250, Screen.PrimaryScreen.Bounds.Width, 200, true);
-
-            IntPtr proc = getName("wow");
-            if (proc == IntPtr.Zero)
+            wow_handle_proc = getName("wow");
+            if (wow_handle_proc == IntPtr.Zero)
             {
                 Console.WriteLine("Did not find process World of Warcraft");
                 Console.ReadLine();
                 Environment.Exit(0);
             }
 
-            Program.wow_handle = proc;
+            Program.wow_handle = wow_handle_proc;
 
             Console.WriteLine("Found process World of Warcraft");
 
             updateWowRect();
 
             //SET FOREGROUND
-            SetForegroundWindow(proc);
+            SetForegroundWindow(wow_handle_proc);
             System.Threading.Thread.Sleep(250);
 
 
             //RESIZE THE WINDOW 
-            MoveWindow(proc, 0, 0, 1465, 910, true);
+            MoveWindow(wow_handle_proc, 0, 0, 1465, 910, true);
             //System.Threading.Thread.Sleep(250); 
 
             //FETCH POSITION AGAIN 
@@ -415,15 +415,33 @@ namespace ElysiumAutoQueue
             //GetWindowRect(GetForegroundWindow(), out rect);
         }
 
+        public static int bringToFrontTimer = 0;
+
         private static void TimerCallback(Object o)
         {
-            
+
+            //Bring to front each 10 run...
+            bringToFrontTimer++;
+            if (bringToFrontTimer >= 10)
+            {
+                //Reset
+                bringToFrontTimer = 0;
+
+                //Bring to front...
+                SetForegroundWindow(wow_handle_proc);
+                System.Threading.Thread.Sleep(250);
+            }
+                
             t.Dispose();
             
             if (applicationMode == ApplicationModes.dev || applicationMode == ApplicationModes.prod)
             {
 
                 string state = findGameState();
+
+                //Latest reported state is for standby etc.
+                StateManager.latest_reported_state = state;
+
                 if (state == null)
                 {
                     Console.WriteLine("GameState is null");

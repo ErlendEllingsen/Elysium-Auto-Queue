@@ -12,6 +12,8 @@ namespace ElysiumAutoQueue.Content
         public static System.Threading.Timer stateWatcherTimer = new System.Threading.Timer(StateManager.TimerCallback, null, 1500, 1500);
 
         public static string lastState = null, currentState = null;
+        public static string latest_reported_state; //used for standby on null etc...
+
         public static DateTime stateStart; //Check state length
 
 
@@ -38,6 +40,8 @@ namespace ElysiumAutoQueue.Content
 
         public static void stateUpdated()
         {
+            if (latest_reported_state == null) return; //Waiting while null
+
             if (currentState == "realm-select")
             {
                 if (SelectRealm.selectedAlternative == null) SelectRealm.selectAlternative(SelectRealm.srv_1);
@@ -62,6 +66,7 @@ namespace ElysiumAutoQueue.Content
 
         private static void TimerCallback(Object o)
         {
+            if (latest_reported_state == null) return; //Waiting while null
 
             //DEBUG
             OutConfig.export();

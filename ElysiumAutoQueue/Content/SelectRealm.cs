@@ -11,9 +11,9 @@ namespace ElysiumAutoQueue.Content
     class SelectRealm
     {
 
-        public static SelectRealmAlternative srv_1 = new SelectRealmAlternative("Server 1", 605, 250);
-        public static SelectRealmAlternative srv_2 = new SelectRealmAlternative("Server 2", 605, 275);
-        public static SelectRealmAlternative srv_3 = new SelectRealmAlternative("Server 3", 605, 295);
+        public static SelectRealmAlternative srv_1 = new SelectRealmAlternative("Server 1", "Elysium PvP", 605, 250);
+        public static SelectRealmAlternative srv_2 = new SelectRealmAlternative("Server 2", "Nostalrius PvP", 605, 275);
+        public static SelectRealmAlternative srv_3 = new SelectRealmAlternative("Server 3", "Nostalrius PvE", 605, 295);
 
         public static SelectRealmAlternative selectedAlternative = null;
 
@@ -39,13 +39,16 @@ namespace ElysiumAutoQueue.Content
 
     class SelectRealmAlternative
     {
-        public string name; 
+        public string name;
+        public string realmlist_name;
+         
         public int x;
         public int y;
 
-        public SelectRealmAlternative(string name, int x, int y)
+        public SelectRealmAlternative(string name, string realmlist_name, int x, int y)
         {
             this.name = name;
+            this.realmlist_name = realmlist_name;
             this.x = x;
             this.y = y;
         }

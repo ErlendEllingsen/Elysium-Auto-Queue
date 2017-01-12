@@ -18,20 +18,8 @@ namespace ElysiumAutoQueue.Content
             //--- LOGIN PROCESS ---
 
             //Fetch username and password
-            string username = null, password = null;
-
-            //fetch username
-            using (StreamReader sr = new StreamReader("./login_username.txt"))
-            {
-                username = sr.ReadToEnd();
-            }
-
-            //fetch password
-            using (StreamReader sr = new StreamReader("./login_password.txt"))
-            {
-                password = sr.ReadToEnd();
-            }
-
+            string username = ProgramConfig.config.login_username;
+            string password = ProgramConfig.config.login_password;
 
 
             //-- USERNAME -- 

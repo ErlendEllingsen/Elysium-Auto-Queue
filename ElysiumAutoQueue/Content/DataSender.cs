@@ -15,13 +15,13 @@ namespace ElysiumAutoQueue.Content
 
         public static string endpoint_live = "https://elysiumstatus.com/auto-queue-update";
         public static string endpoint_dev = "http://10.0.0.13:8080/auto-queue-update";
-        public static string endpoint = endpoint_live;
+        public static string endpoint = endpoint_live; //Adjusted by config.
 
         public static async void sendData()
         {
-            Console.WriteLine("Sending data...");
+            DataSender.endpoint = ProgramConfig.config.getEndpoint();
 
-            if (Program.applicationMode == Program.ApplicationModes.dev) endpoint = endpoint_dev;
+            Console.WriteLine("Sending data...");
 
             //Fetch password
             string password_autoqueue = "";
