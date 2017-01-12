@@ -56,8 +56,8 @@ namespace ElysiumAutoQueue.Content
         private static void writeRealmList()
         {
             string realmListContent = "" +
-            "SET realmList \"logon.elysium - project.org\"" +
-            "SET realmName \"" + WowExternalRealmSwitcher.realmChangingTo.realmlist_name + "\"" +
+            "SET realmList \"logon.elysium-project.org\"" + Environment.NewLine + 
+            "SET realmName \"" + WowExternalRealmSwitcher.realmChangingTo.realmlist_name + "\"" + Environment.NewLine +
             "SET accountName \"" + ProgramConfig.config.login_username + "\"";
 
             using (StreamWriter sw = new StreamWriter(ProgramConfig.config.path_wow + "./realmlist.wtf"))

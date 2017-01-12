@@ -21,6 +21,32 @@ namespace ElysiumAutoQueue.Content
         public static int waitDialogTimeouts = 0;
         public static bool isExitingWaitingDialogs = false, isSettingUpRealm = false, isSwitchingRealmFromCharacterScreen = false;
 
+
+        //OVERALL LOGIC ADMIN 
+        #region MASTER LOGIC 
+
+        public static SelectRealmAlternative current_sra = null;
+        public static bool isSwitchingRealm = false;
+
+        public static SelectRealmAlternative getNextSRA(SelectRealmAlternative sra)
+        {
+            //Fallback
+            current_sra = SelectRealm.elysium_pvp;
+
+            //Find realm
+            if (sra == SelectRealm.elysium_pvp) current_sra = SelectRealm.nostalrius_pvp;
+            if (sra == SelectRealm.nostalrius_pvp) current_sra = SelectRealm.nostalrius_pve;
+            if (sra == SelectRealm.nostalrius_pve) current_sra = SelectRealm.elysium_pvp;
+
+            Console.WriteLine("[StateManager] Switching realm to " + current_sra.realmlist_name);
+
+            return current_sra; 
+        }
+
+
+        #endregion 
+
+
         public static void updateState(string newState)
         {
             if (currentState != newState)
@@ -52,9 +78,10 @@ namespace ElysiumAutoQueue.Content
             }
             else if (currentState== "queue")
             {
-                System.Threading.Thread.Sleep(2000);
-                SendKeys.SendWait("{ESCAPE}");
-                System.Threading.Thread.Sleep(2000);
+                //TODO: Something
+                //System.Threading.Thread.Sleep(2000);
+                //SendKeys.SendWait("{ESCAPE}");
+                //System.Threading.Thread.Sleep(2000);
                 
             } else if (currentState == "disconnect-dialog")
             {
@@ -77,6 +104,25 @@ namespace ElysiumAutoQueue.Content
             if (secs % 5 == 0) Console.WriteLine("Been in state " + StateManager.currentState + " (prev: " + StateManager.lastState + ") for " + secs + " seconds..");
 
             //Caluclations
+
+            //Queue
+            if (currentState == "queue" && secs >= 30 && !isSwitchingRealm)
+            {
+                isSwitchingRealm = true;
+
+                try
+                {
+                    Program.wowproc.Kill();
+                }
+                catch (Exception e) { }
+
+                //Sleep two secs
+                System.Threading.Thread.Sleep(2000);
+
+                WoWStart ws = new WoWStart(StateManager.getNextSRA(current_sra));
+                ws.start();
+
+            }
 
             //Waiting dialogs 
             if (isExitingWaitingDialogs && currentState != "waiting-dialog") isExitingWaitingDialogs = false;
@@ -132,7 +178,27 @@ namespace ElysiumAutoQueue.Content
             }
 
             //Character-select 
-            if (isSwitchingRealmFromCharacterScreen && currentState != "char-select") isSwitchingRealmFromCharacterScreen = false;
+            if (currentState == "char-select" && secs >= 20 && !isSwitchingRealm)
+            {
+                isSwitchingRealm = true;
+
+                current_sra.server.update(0, true);
+                
+                try
+                {
+                    Program.wowproc.Kill();
+                }
+                catch (Exception e) { }
+
+                //Sleep two secs
+                System.Threading.Thread.Sleep(2000);
+
+                WoWStart ws = new WoWStart(StateManager.getNextSRA(current_sra));
+                ws.start();
+
+            }
+
+            /*if (isSwitchingRealmFromCharacterScreen && currentState != "char-select") isSwitchingRealmFromCharacterScreen = false;
             if (currentState == "char-select" && secs >= 8 && !isSwitchingRealmFromCharacterScreen)
             {
                 Console.WriteLine("Moving from char-select to realm display...");
@@ -147,7 +213,7 @@ namespace ElysiumAutoQueue.Content
 
                 
 
-            }
+            }*/
 
 
             GC.Collect();

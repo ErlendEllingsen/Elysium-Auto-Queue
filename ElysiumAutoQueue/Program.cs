@@ -79,7 +79,7 @@ namespace ElysiumAutoQueue
             public int Bottom;
         }
 
-        static IntPtr getName(string wName)
+        public static IntPtr getName(string wName)
         {
             IntPtr hWnd = IntPtr.Zero;
             foreach (Process pList in Process.GetProcesses())
@@ -331,39 +331,9 @@ namespace ElysiumAutoQueue
             System.Threading.Thread.Sleep(250);
             MoveWindow(thisHandle, 0, Screen.PrimaryScreen.Bounds.Height - 250, Screen.PrimaryScreen.Bounds.Width, 200, true);
 
-            //START: WOW 
-            wowproc = new Process();
-            wowproc.StartInfo = new ProcessStartInfo(ProgramConfig.config.path_wow + "./WoW.exe");
-            wowproc.Start();
-
-            System.Threading.Thread.Sleep(8000);
-
-            wow_handle_proc = getName("wow");
-            if (wow_handle_proc == IntPtr.Zero)
-            {
-                Console.WriteLine("Did not find process World of Warcraft");
-                Console.ReadLine();
-                Environment.Exit(0);
-            }
-
-            Program.wow_handle = wow_handle_proc;
-
-            Console.WriteLine("Found process World of Warcraft");
-
-            updateWowRect();
-
-            //SET FOREGROUND
-            SetForegroundWindow(wow_handle_proc);
-            System.Threading.Thread.Sleep(250);
-
-
-            //RESIZE THE WINDOW 
-            MoveWindow(wow_handle_proc, 0, 0, 1465, 910, true);
-            //System.Threading.Thread.Sleep(250); 
-
-            //FETCH POSITION AGAIN 
-            updateWowRect();
-
+            //Start WoW 
+            WoWStart ws = new WoWStart(StateManager.getNextSRA(null));
+            ws.start();
 
             t = new System.Threading.Timer(TimerCallback, null, 0, 15000);
 
@@ -409,7 +379,10 @@ namespace ElysiumAutoQueue
             */
 
             Console.ReadLine();
-            wowproc.Kill();
+
+            try {
+                wowproc.Kill();
+            } catch (Exception e) { }
 
             //RECT rect = new RECT();
             //GetWindowRect(GetForegroundWindow(), out rect);

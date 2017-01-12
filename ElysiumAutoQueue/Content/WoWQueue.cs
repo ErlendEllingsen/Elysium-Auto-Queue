@@ -53,6 +53,7 @@ namespace ElysiumAutoQueue.Content
                 if (server == null)
                 {
                     Console.WriteLine("Unable to find WoWServer for WowQueue. Input name: " + serverName + ".");
+                    StateManager.current_sra.server.update(0, false);
                     return;
                 }
 
@@ -70,6 +71,7 @@ namespace ElysiumAutoQueue.Content
                 if (server != null) server.update(0, false);
 
                 Console.WriteLine("Exception when parsing data for WowQueue.");
+                StateManager.current_sra.server.update(0, false);
                 return;
             }
 

@@ -24,12 +24,7 @@ namespace ElysiumAutoQueue.Content
             Console.WriteLine("Sending data...");
 
             //Fetch password
-            string password_autoqueue = "";
-
-            using (StreamReader sr = new StreamReader("./password_autoqueue.txt"))
-            {
-                password_autoqueue = sr.ReadToEnd();
-            }
+            string password_autoqueue = ProgramConfig.config.password_autoqueue;
 
 
             using (var client = new HttpClient())

@@ -66,6 +66,7 @@
     <Compile Include="Content\WoWQueue.cs" />
     <Compile Include="Content\WoWRealmSetup.cs" />
     <Compile Include="Content\WowServer.cs" />
+    <Compile Include="Content\WoWStart.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

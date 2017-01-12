@@ -11,9 +11,12 @@ namespace ElysiumAutoQueue.Content
     class SelectRealm
     {
 
-        public static SelectRealmAlternative srv_1 = new SelectRealmAlternative("Server 1", "Elysium PvP", 605, 250);
-        public static SelectRealmAlternative srv_2 = new SelectRealmAlternative("Server 2", "Nostalrius PvP", 605, 275);
-        public static SelectRealmAlternative srv_3 = new SelectRealmAlternative("Server 3", "Nostalrius PvE", 605, 295);
+        public static SelectRealmAlternative srv_1 = new SelectRealmAlternative("Server 1", "Elysium PvP", WoWQueue.elysium_pvp, 605, 250);
+        public static SelectRealmAlternative srv_2 = new SelectRealmAlternative("Server 2", "Nostalrius PvP", WoWQueue.nostalrius_pvp, 605, 275);
+        public static SelectRealmAlternative srv_3 = new SelectRealmAlternative("Server 3", "Nostalrius PvE", WoWQueue.nostalrius_pve, 605, 295);
+
+        //Create references...
+        public static SelectRealmAlternative elysium_pvp = srv_1, nostalrius_pvp = srv_2, nostalrius_pve = srv_3; 
 
         public static SelectRealmAlternative selectedAlternative = null;
 
@@ -41,14 +44,19 @@ namespace ElysiumAutoQueue.Content
     {
         public string name;
         public string realmlist_name;
+
+        public WowServer server;
          
         public int x;
         public int y;
 
-        public SelectRealmAlternative(string name, string realmlist_name, int x, int y)
+        public SelectRealmAlternative(string name, string realmlist_name, WowServer server, int x, int y)
         {
             this.name = name;
             this.realmlist_name = realmlist_name;
+
+            this.server = server;
+
             this.x = x;
             this.y = y;
         }
