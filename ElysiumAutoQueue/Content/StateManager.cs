@@ -85,6 +85,12 @@ namespace ElysiumAutoQueue.Content
                 
             } else if (currentState == "disconnect-dialog")
             {
+                //If disconnect from waiting, report incident
+                if (lastState == "waiting-dialog")
+                {
+                    WaitingIncidentMonitor.addIncident();
+                }
+
                 System.Threading.Thread.Sleep(1500);
                 SendKeys.SendWait("{ESCAPE}");
                 System.Threading.Thread.Sleep(1500);
@@ -198,22 +204,30 @@ namespace ElysiumAutoQueue.Content
 
             }
 
-            /*if (isSwitchingRealmFromCharacterScreen && currentState != "char-select") isSwitchingRealmFromCharacterScreen = false;
-            if (currentState == "char-select" && secs >= 8 && !isSwitchingRealmFromCharacterScreen)
+            //--- RESTART IF BUGGED ---
+            if (secs >= 100 && !isSwitchingRealm) //more than 2 minutes in same state...
             {
-                Console.WriteLine("Moving from char-select to realm display...");
+                //Report that the realm is bugged...
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("[StateManager] State is bugged. (>= 120 secs). Restarting.");
+                Console.ForegroundColor = ConsoleColor.White;
 
-                isSwitchingRealmFromCharacterScreen = true;
+                //Set to switching
+                isSwitchingRealm = true;
 
-                System.Threading.Thread.Sleep(1500);
-                Program.gameSetMouse(1299, 93);
-                System.Threading.Thread.Sleep(1000);
-                Program.mouse_event(Program.MOUSEEVENTF_LEFTDOWN, Convert.ToUInt32(Cursor.Position.X), Convert.ToUInt32(Cursor.Position.Y), 0, 0);
-                Program.mouse_event(Program.MOUSEEVENTF_LEFTUP, Convert.ToUInt32(Cursor.Position.X), Convert.ToUInt32(Cursor.Position.Y), 0, 0);
+                try
+                {
+                    Program.wowproc.Kill();
+                }
+                catch (Exception e) { }
 
-                
+                //Sleep two secs
+                System.Threading.Thread.Sleep(2000);
 
-            }*/
+                WoWStart ws = new WoWStart(current_sra); //Retry with same SRA
+                ws.start();
+
+            }
 
 
             GC.Collect();

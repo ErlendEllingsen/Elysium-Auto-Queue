@@ -299,8 +299,12 @@ namespace ElysiumAutoQueue
             bool isRealmSelect = Processes.isRealmSelector();
             if (isRealmSelect) return "realm-select";
 
+            bool isQueueBoxCalc = Processes.isQueueBoxCalc();
+            if (isQueueBoxCalc) return "queue";
+
             bool isQueueBox = Processes.isQueueBox();
             if (isQueueBox) return "queue";
+            
 
             bool isCharacterSelect = Processes.isCharacterSelector();
             if (isCharacterSelect) return "char-select";
@@ -323,6 +327,8 @@ namespace ElysiumAutoQueue
 
             applicationMode = ApplicationModes.prod;
 
+  
+
             ProgramConfig.loadConfig();
             OutConfig.export();
 
@@ -338,13 +344,7 @@ namespace ElysiumAutoQueue
             t = new System.Threading.Timer(TimerCallback, null, 0, 15000);
 
 
-            if (applicationMode == ApplicationModes.screenshot)
-            {
-                Bitmap b = (Bitmap)gameGetImage(0, 0, 1465, 910);
-                b.Save("screenshot.png", System.Drawing.Imaging.ImageFormat.Png);
-                Console.ReadKey();
-                Environment.Exit(0);
-            }
+            
 
             
 

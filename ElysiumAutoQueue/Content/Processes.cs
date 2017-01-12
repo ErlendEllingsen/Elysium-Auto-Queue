@@ -60,6 +60,9 @@ namespace ElysiumAutoQueue.Content
 
         public static bool isQueueBox()
         {
+            
+            
+
             Bitmap bmp = (Bitmap)Program.gameGetImage(440, 375, 1026, 553);
             Bitmap bmp2 = new Bitmap(bmp);
 
@@ -107,6 +110,60 @@ namespace ElysiumAutoQueue.Content
             return false; //Unexpected result
 
             //end isQueueBox
+        }
+
+        public static bool isQueueBoxCalc()
+        {
+
+
+
+            Bitmap bmp = (Bitmap)Program.gameGetImage(472, 390, 999, 548);
+            Bitmap bmp2 = new Bitmap(bmp);
+
+            //Scan the image 
+            for (var x = 1; x < bmp.Width; x++)
+            {
+                for (var y = 1; y < bmp.Height; y++)
+                {
+
+                    Color fromOrig = bmp.GetPixel(x, y);
+                    string result = Program.ColorClassify(fromOrig);
+
+                    if (result == "Yellows" && fromOrig.GetSaturation() >= 0.92 && fromOrig.GetBrightness() >= 0.3)
+                    {
+                        bmp2.SetPixel(x, y, Color.White);
+                    }
+                    else
+                    {
+                        bmp2.SetPixel(x, y, Color.Black);
+                    }
+
+                }
+            }
+
+            bmp2.Save("workbox_queuescreencalc.jpeg");
+
+            using (var engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default))
+            {
+                using (var img = Pix.LoadFromFile("./workbox_queuescreencalc.jpeg"))
+                {
+                    using (var page = engine.Process(img))
+                    {
+                        var text = page.GetText();
+
+                        if (text.ToLower().Contains("position in queue"))
+                        {
+                            WoWQueue.update(text);
+                            return true;
+                        }
+                        return false;
+                    }
+                }
+            }
+
+            return false; //Unexpected result
+
+            //end isQueueBoxCalc
         }
 
         public static bool isRealmSelector()
