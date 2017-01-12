@@ -14,8 +14,10 @@ namespace ElysiumAutoQueue.Content
         public static string lastState = null, currentState = null;
         public static DateTime stateStart; //Check state length
 
+
         //State locks
-        public static bool isExitingWaitingDialogs = false, isSettingUpRealm = false;
+        public static int waitDialogTimeouts = 0;
+        public static bool isExitingWaitingDialogs = false, isSettingUpRealm = false, isSwitchingRealmFromCharacterScreen = false;
 
         public static void updateState(string newState)
         {
@@ -61,10 +63,13 @@ namespace ElysiumAutoQueue.Content
         private static void TimerCallback(Object o)
         {
 
-            TimeSpan ts = DateTime.Now.Subtract(StateManager.stateStart);
-            double secs = ts.TotalSeconds;
+            //DEBUG
+            OutConfig.export();
 
-            Console.WriteLine("Been in state " + StateManager.currentState + " (prev: " + StateManager.lastState + ") for " + secs + " seconds..");
+            TimeSpan ts = DateTime.Now.Subtract(StateManager.stateStart);
+            int secs = Convert.ToInt32(Math.Floor(((double)ts.TotalSeconds)));
+
+            if (secs % 5 == 0) Console.WriteLine("Been in state " + StateManager.currentState + " (prev: " + StateManager.lastState + ") for " + secs + " seconds..");
 
             //Caluclations
 
@@ -72,10 +77,33 @@ namespace ElysiumAutoQueue.Content
             if (isExitingWaitingDialogs && currentState != "waiting-dialog") isExitingWaitingDialogs = false;
             if (currentState == "waiting-dialog" && secs >= 30 && !isExitingWaitingDialogs)
             {
+                WaitingIncidentMonitor.addIncident();
+
+                waitDialogTimeouts++;
                 isExitingWaitingDialogs = true; 
                 SendKeys.SendWait("{ESCAPE}");
                 Console.WriteLine("Exiting waiting-dialog (timeout.");
                 System.Threading.Thread.Sleep(2000);
+
+                if (waitDialogTimeouts >= 5)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+
+                    waitDialogTimeouts = 0;
+                    Console.WriteLine("Exiting to login (too many waiting-dialog timeout (prev state: " + lastState + ")).");
+                    System.Threading.Thread.Sleep(1000);
+
+                    Program.wowproc.Kill();
+                    System.Threading.Thread.Sleep(1000);
+
+                    Console.WriteLine("Restarting wow..");
+
+                    Console.ResetColor();
+
+                    Program.Main(null);
+
+                }
+
             }
 
             //Login stuff 
@@ -92,17 +120,27 @@ namespace ElysiumAutoQueue.Content
 
             //Realm setup....
             if (isSettingUpRealm && currentState != "realm-setup") isSettingUpRealm = false; 
-            if (currentState == "realm-setup" && secs >= 5 && !isSettingUpRealm)
+            if (currentState == "realm-setup" && secs >= 8 && !isSettingUpRealm)
             {
                 isSettingUpRealm = true;
-                System.Threading.Thread.Sleep(1500);
+                WoWRealmSetup.doSetup();
+            }
 
-                Program.gameSetMouse(1144, 336);
-                System.Threading.Thread.Sleep(250);
+            //Character-select 
+            if (isSwitchingRealmFromCharacterScreen && currentState != "char-select") isSwitchingRealmFromCharacterScreen = false;
+            if (currentState == "char-select" && secs >= 8 && !isSwitchingRealmFromCharacterScreen)
+            {
+                Console.WriteLine("Moving from char-select to realm display...");
+
+                isSwitchingRealmFromCharacterScreen = true;
+
+                System.Threading.Thread.Sleep(1500);
+                Program.gameSetMouse(1299, 93);
+                System.Threading.Thread.Sleep(1000);
                 Program.mouse_event(Program.MOUSEEVENTF_LEFTDOWN, Convert.ToUInt32(Cursor.Position.X), Convert.ToUInt32(Cursor.Position.Y), 0, 0);
                 Program.mouse_event(Program.MOUSEEVENTF_LEFTUP, Convert.ToUInt32(Cursor.Position.X), Convert.ToUInt32(Cursor.Position.Y), 0, 0);
 
-
+                
 
             }
 

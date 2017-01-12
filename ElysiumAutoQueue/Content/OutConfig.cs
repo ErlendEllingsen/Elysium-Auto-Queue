@@ -1,0 +1,54 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+using Newtonsoft.Json;
+
+namespace ElysiumAutoQueue.Content
+{
+
+
+
+    class OutConfig
+    {
+
+        public static OutConfigData config = new OutConfigData();
+        public static string outputJson = null;
+
+        public static void export()
+        {
+
+            //Set time
+            config.export_time = DateTime.Now;
+
+            //Is login server unreliable? 
+            config.loginServerUnreliable = WaitingIncidentMonitor.isLogonUnstable();
+            config.waiting_incidents = WaitingIncidentMonitor.incidents;
+
+            outputJson = JsonConvert.SerializeObject(config);
+
+            //Write final
+            using (StreamWriter sw = new StreamWriter("./out.json"))
+            {
+                sw.Write(outputJson);
+            }
+        }
+        
+
+    }
+
+    class OutConfigData
+    {
+
+        public DateTime export_time;
+
+        public bool loginServerUnreliable = false;
+        public List<DateTime> waiting_incidents = new List<DateTime>();
+
+        public List<WowServer> servers = WoWQueue.servers;
+
+
+    }
+}

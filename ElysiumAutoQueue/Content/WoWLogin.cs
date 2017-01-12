@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace ElysiumAutoQueue.Content
 {
@@ -13,8 +14,25 @@ namespace ElysiumAutoQueue.Content
 
         public static void DoLogin()
         {
-            loginRunning = true; 
+            loginRunning = true;
             //--- LOGIN PROCESS ---
+
+            //Fetch username and password
+            string username = null, password = null;
+
+            //fetch username
+            using (StreamReader sr = new StreamReader("./login_username.txt"))
+            {
+                username = sr.ReadToEnd();
+            }
+
+            //fetch password
+            using (StreamReader sr = new StreamReader("./login_password.txt"))
+            {
+                password = sr.ReadToEnd();
+            }
+
+
 
             //-- USERNAME -- 
             Program.gameSetMouse(705, 485); //Username field
@@ -26,7 +44,7 @@ namespace ElysiumAutoQueue.Content
             SendKeys.SendWait("{BACKSPACE}");
 
             System.Threading.Thread.Sleep(500);
-            SendKeys.SendWait("erlendellingsen");
+            SendKeys.SendWait(username);
 
             System.Threading.Thread.Sleep(500);
 
@@ -42,7 +60,7 @@ namespace ElysiumAutoQueue.Content
 
             SendKeys.SendWait("{BACKSPACE}");
             System.Threading.Thread.Sleep(500);
-            SendKeys.SendWait("lol123");
+            SendKeys.SendWait(password);
 
             //Login button
             Program.gameSetMouse(705, 643);

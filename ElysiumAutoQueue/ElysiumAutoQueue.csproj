@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -50,11 +54,14 @@
   <ItemGroup>
     <Compile Include="Content\GameState.cs" />
     <Compile Include="Content\GameStateCriteria.cs" />
+    <Compile Include="Content\OutConfig.cs" />
     <Compile Include="Content\Processes.cs" />
     <Compile Include="Content\SelectRealm.cs" />
     <Compile Include="Content\StateManager.cs" />
+    <Compile Include="Content\WaitingIncidentMonitor.cs" />
     <Compile Include="Content\WoWLogin.cs" />
     <Compile Include="Content\WoWQueue.cs" />
+    <Compile Include="Content\WoWRealmSetup.cs" />
     <Compile Include="Content\WowServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

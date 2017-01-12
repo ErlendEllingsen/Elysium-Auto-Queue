@@ -98,6 +98,7 @@ namespace ElysiumAutoQueue
 
         public static IntPtr wow_handle;
         public static RECT wow_rect;
+        public static Process wowproc;
 
         public static IntPtr console_handle;
 
@@ -314,11 +315,20 @@ namespace ElysiumAutoQueue
         #endregion
 
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             applicationMode = ApplicationModes.dev;
 
+            OutConfig.export();
+
             IntPtr thisHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+
+
+            wowproc = new Process();
+            wowproc.StartInfo = new ProcessStartInfo("D:\\World of Warcraft Classic\\WoW.exe");
+            wowproc.Start();
+
+            System.Threading.Thread.Sleep(8000);
 
             SetCursorPos(1000, 900);
             //Screen.PrimaryScreen.Bounds.Width;
@@ -397,6 +407,7 @@ namespace ElysiumAutoQueue
             */
 
             Console.ReadLine();
+            wowproc.Kill();
 
             //RECT rect = new RECT();
             //GetWindowRect(GetForegroundWindow(), out rect);
