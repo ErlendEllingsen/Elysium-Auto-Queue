@@ -103,7 +103,7 @@ namespace ElysiumAutoQueue
         public static IntPtr console_handle;
 
         //Application vars 
-        public enum ApplicationModes { normal, cordscan, dev, screenshot };
+        public enum ApplicationModes { normal, cordscan, dev, prod, screenshot };
         public static ApplicationModes applicationMode = ApplicationModes.normal;
 
         public static List<GameState> gameStates = new List<GameState>();
@@ -390,6 +390,8 @@ namespace ElysiumAutoQueue
 
 
 
+            //Setup Data sending
+            DataSender.dataSendTimer = new System.Threading.Timer(DataSender.TimerCallback, null, 1500, 15000);
 
 
             //705, 574
@@ -418,7 +420,7 @@ namespace ElysiumAutoQueue
             
             t.Dispose();
             
-            if (applicationMode == ApplicationModes.dev)
+            if (applicationMode == ApplicationModes.dev || applicationMode == ApplicationModes.prod)
             {
 
                 string state = findGameState();

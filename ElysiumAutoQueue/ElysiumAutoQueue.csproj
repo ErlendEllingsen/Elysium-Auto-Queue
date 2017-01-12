@@ -52,6 +52,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Content\DataSender.cs" />
     <Compile Include="Content\GameState.cs" />
     <Compile Include="Content\GameStateCriteria.cs" />
     <Compile Include="Content\OutConfig.cs" />
@@ -98,6 +99,15 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="login_password.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="login_username.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="password_autoqueue.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="x64\liblept172.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

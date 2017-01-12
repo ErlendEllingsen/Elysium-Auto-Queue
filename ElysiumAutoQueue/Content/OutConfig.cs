@@ -17,7 +17,7 @@ namespace ElysiumAutoQueue.Content
         public static OutConfigData config = new OutConfigData();
         public static string outputJson = null;
 
-        public static void export()
+        public static string export()
         {
 
             //Set time
@@ -29,11 +29,21 @@ namespace ElysiumAutoQueue.Content
 
             outputJson = JsonConvert.SerializeObject(config);
 
-            //Write final
-            using (StreamWriter sw = new StreamWriter("./out.json"))
+            try {
+                //Write final
+                using (StreamWriter sw = new StreamWriter("./out.json"))
+                {
+                    sw.Write(outputJson);
+                }
+            } catch (IOException e)
             {
-                sw.Write(outputJson);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("IO failure Outconfig.export");
+                Console.ForegroundColor = ConsoleColor.White;
             }
+
+            //Return output
+            return outputJson;
         }
         
 
