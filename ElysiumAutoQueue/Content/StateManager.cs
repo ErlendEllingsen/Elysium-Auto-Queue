@@ -112,7 +112,7 @@ namespace ElysiumAutoQueue.Content
             //Caluclations
 
             //Queue
-            if (currentState == "queue" && secs >= 30 && !isSwitchingRealm)
+            if (currentState == "queue" && secs >= 20 && !isSwitchingRealm)
             {
                 isSwitchingRealm = true;
 
@@ -169,7 +169,7 @@ namespace ElysiumAutoQueue.Content
                 WoWLogin.loginRunning = false; //Login must have been success?
             }
 
-            if (currentState == "login" && secs >= 10 && !WoWLogin.loginRunning)
+            if (currentState == "login" && secs >= 5 && !WoWLogin.loginRunning)
             {
                 WoWLogin.DoLogin();
                 Console.WriteLine("Doing login..");
@@ -184,7 +184,7 @@ namespace ElysiumAutoQueue.Content
             }
 
             //Character-select 
-            if (currentState == "char-select" && secs >= 20 && !isSwitchingRealm)
+            if (currentState == "char-select" && secs >= 5 && !isSwitchingRealm)
             {
                 isSwitchingRealm = true;
 
@@ -207,6 +207,8 @@ namespace ElysiumAutoQueue.Content
             //--- RESTART IF BUGGED ---
             if (secs >= 100 && !isSwitchingRealm) //more than 2 minutes in same state...
             {
+                updateState(null);
+
                 //Report that the realm is bugged...
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("[StateManager] State is bugged. (>= 120 secs). Restarting.");
