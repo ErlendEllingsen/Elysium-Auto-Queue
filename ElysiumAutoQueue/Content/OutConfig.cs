@@ -60,16 +60,15 @@ namespace ElysiumAutoQueue.Content
         public bool loginServerUnreliable = false;
         public List<DateTime> waiting_incidents = new List<DateTime>();
 
-        public List<WowServer> servers = WoWQueue.servers;
-        public Dictionary<string, WowServer> servers_handled = new Dictionary<string, WowServer>();
+        public Dictionary<string, WowServer> servers = new Dictionary<string, WowServer>();
 
         public void prepare()
         {
-            this.servers_handled.Clear();
+            this.servers.Clear();
                 
-            foreach (WowServer ws in this.servers)
+            foreach (WowServer ws in WoWQueue.servers)
             {
-                servers_handled.Add(ws.elysiumStatusIdentifier, ws);
+                servers.Add(ws.elysiumStatusIdentifier, ws);
             }
 
         }
