@@ -12,11 +12,12 @@ namespace ElysiumAutoQueue.Content
 
         
 
-        public static WowServer elysium_pvp = new WowServer("Elysium PVP");
-        public static WowServer nostalrius_pvp = new WowServer("Nostalrius PVP");
-        public static WowServer nostalrius_pve = new WowServer("Nostalrius PVE");
+        public static WowServer elysium_pvp = new WowServer("Elysium", "elysium_pvp");
+        public static WowServer nostalrius_pvp = new WowServer("Anathema", "anathema_pvp");
+        public static WowServer nostalrius_pve = new WowServer("Darrowshire", "darrowshire_pve");
+        public static WowServer zethkur = new WowServer("Zeth'Kur", "zethkur_pvp");
 
-        public static List<WowServer> servers = new List<WowServer>() { elysium_pvp, nostalrius_pvp, nostalrius_pve };
+        public static List<WowServer> servers = new List<WowServer>() { elysium_pvp, nostalrius_pvp, nostalrius_pve, zethkur};
 
         public static WowServer findServerByName(string name)
         {

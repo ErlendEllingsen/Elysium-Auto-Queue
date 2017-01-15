@@ -34,9 +34,10 @@ namespace ElysiumAutoQueue.Content
             current_sra = SelectRealm.elysium_pvp;
 
             //Find realm
-            if (sra == SelectRealm.elysium_pvp) current_sra = SelectRealm.nostalrius_pvp;
-            if (sra == SelectRealm.nostalrius_pvp) current_sra = SelectRealm.nostalrius_pve;
-            if (sra == SelectRealm.nostalrius_pve) current_sra = SelectRealm.elysium_pvp;
+            if (sra == SelectRealm.elysium_pvp) current_sra = SelectRealm.anathema_pvp;
+            if (sra == SelectRealm.anathema_pvp) current_sra = SelectRealm.darrowshire_pve;
+            if (sra == SelectRealm.darrowshire_pve) current_sra = SelectRealm.zethkur;
+            if (sra == SelectRealm.zethkur) current_sra = SelectRealm.elysium_pvp;
 
             Console.WriteLine("[StateManager] Switching realm to " + current_sra.realmlist_name);
 

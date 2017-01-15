@@ -10,14 +10,16 @@ namespace ElysiumAutoQueue.Content
     {
 
         public string name;
+        public string elysiumStatusIdentifier = ""; 
 
         public bool queueAvailable = true; //0 in queue still means "available" (true). false = error
         public int queue = 0;
         public DateTime last_updated;
         
-        public WowServer(string name)
+        public WowServer(string name, string elysiumStatusIdentifier)
         {
             this.name = name;
+            this.elysiumStatusIdentifier = elysiumStatusIdentifier;
         }
 
         public void update(int queue, bool queueAvailable = true)

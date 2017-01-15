@@ -27,6 +27,9 @@ namespace ElysiumAutoQueue.Content
             config.loginServerUnreliable = WaitingIncidentMonitor.isLogonUnstable();
             config.waiting_incidents = WaitingIncidentMonitor.incidents;
 
+            //Prepare config
+            config.prepare();
+
             outputJson = JsonConvert.SerializeObject(config);
 
             try {
@@ -58,7 +61,18 @@ namespace ElysiumAutoQueue.Content
         public List<DateTime> waiting_incidents = new List<DateTime>();
 
         public List<WowServer> servers = WoWQueue.servers;
+        public Dictionary<string, WowServer> servers_handled = new Dictionary<string, WowServer>();
 
+        public void prepare()
+        {
+            this.servers_handled.Clear();
+                
+            foreach (WowServer ws in this.servers)
+            {
+                servers_handled.Add(ws.elysiumStatusIdentifier, ws);
+            }
+
+        }
 
     }
 }
